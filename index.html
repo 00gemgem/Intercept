@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f0df">
+  <meta name="description" content="Intercept: A little help for oh-no moments.">
+  <title>Intercept | A little help for oh-no moments</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      color-scheme: light;
+      --paper: #f6f0df;
+      --ink: #20231e;
+      --muted: #65675e;
+      --orange: #f35e3e;
+      --lime: #d3ef62;
+      --blue: #78c9c4;
+      --line: rgba(32, 35, 30, .2);
+      --display: 'Space Grotesk', 'Trebuchet MS', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(rgba(32, 35, 30, .11) .7px, transparent .7px);
+      background-size: 15px 15px;
+      font-family: var(--display);
+    }
+    button { font: inherit; }
+    .page { width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 64px;
+      border-bottom: 1px solid var(--line);
+      font: 11px var(--mono);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; font-weight: 700; }
+    .brand-mark { width: 14px; height: 14px; border-radius: 50%; background: var(--orange); border: 2px solid var(--ink); }
+    .topnav { display: flex; align-items: center; gap: 23px; margin-left: auto; margin-right: 28px; }
+    .topnav a { color: var(--ink); text-decoration: none; }
+    .topnav a:hover { color: var(--orange); }
+    .top-status { display: flex; align-items: center; gap: 9px; color: var(--muted); }
+    .status-dot { width: 7px; height: 7px; background: #68a85c; border-radius: 50%; }
+
+    main { padding: 48px 0 74px; }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(390px, .91fr);
+      gap: 5.5%;
+      align-items: center;
+    }
+    .eyebrow { margin: 0 0 18px; font: 11px var(--mono); text-transform: uppercase; color: var(--muted); }
+    h1 { max-width: 620px; margin: 0; font-size: clamp(54px, 7vw, 88px); line-height: .91; letter-spacing: -3px; font-weight: 700; }
+    h1 span { color: var(--orange); }
+    .intro { max-width: 430px; margin: 24px 0 26px; font-size: 16px; line-height: 1.65; color: #4b4d45; }
+    .mode-label { display: block; margin-bottom: 10px; font: 10px var(--mono); text-transform: uppercase; }
+    .mode-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mode-button {
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--ink);
+      border-radius: 3px;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color .18s ease, transform .18s ease;
+    }
+    .mode-button:hover { transform: translateY(-2px); }
+    .mode-button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .mode-button:focus-visible, .buy-button:focus-visible, .close-button:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+    .readout { display: flex; align-items: baseline; gap: 10px; min-height: 30px; margin-top: 15px; }
+    .readout strong { font-size: 13px; }
+    .readout span { font: 10px var(--mono); color: var(--muted); text-transform: uppercase; }
+
+    .product-stage {
+      position: relative;
+      min-height: 500px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--ink);
+      border-radius: 4px;
+      background: var(--blue);
+      isolation: isolate;
+    }
+    .stage-grid {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      opacity: .16;
+      background-image: linear-gradient(var(--ink) 1px, transparent 1px), linear-gradient(90deg, var(--ink) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(transparent, black 18%, black 82%, transparent);
+    }
+    .stage-index, .stage-note { position: absolute; z-index: 1; font: 10px var(--mono); text-transform: uppercase; }
+    .stage-index { top: 17px; left: 18px; }
+    .stage-note { right: 18px; bottom: 17px; color: #434a27; }
+    .spark { position: absolute; color: var(--orange); font-size: 32px; line-height: 1; animation: bob 3s ease-in-out infinite; }
+    .spark.one { top: 19%; right: 19%; transform: rotate(12deg); }
+    .spark.two { left: 15%; bottom: 25%; font-size: 22px; animation-delay: .6s; }
+    .spark.three { top: 31%; left: 12%; font-size: 15px; animation-delay: 1s; }
+    .doll-wrap { width: min(78%, 335px); filter: drop-shadow(12px 15px 0 rgba(32,35,30,.12)); animation: arrive .7s cubic-bezier(.2,.8,.2,1) both; }
+    .doll { display: block; width: 100%; overflow: visible; }
+    .doll-body { transform-origin: 50% 70%; transition: transform .3s ease; }
+    .doll[data-level="medium"] .doll-body { transform: rotate(-3deg) translateY(-3px); }
+    .doll[data-level="critical"] .doll-body { transform: rotate(4deg) translateY(-7px) scale(1.025); }
+    .eye, .mouth { transition: all .2s ease; }
+    .doll[data-level="medium"] .eye { transform: scaleY(.8); }
+    .doll[data-level="critical"] .eye { transform: scaleY(1.25); }
+    .doll[data-level="critical"] .mouth { transform: scale(1.25); }
+    .shadow { fill: rgba(32,35,30,.15); }
+
+    .buy-row { display: flex; align-items: center; gap: 15px; margin-top: 22px; }
+    .buy-button {
+      min-height: 52px;
+      padding: 0 21px;
+      border: 1px solid var(--ink);
+      border-radius: 3px;
+      background: var(--orange);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 var(--ink);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .buy-button:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+    .price-note { font: 10px var(--mono); line-height: 1.5; color: var(--muted); text-transform: uppercase; }
+    .facts {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      margin-top: 58px;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+    .fact { min-height: 120px; padding: 19px 22px 18px 0; }
+    .fact + .fact { padding-left: 22px; border-left: 1px solid var(--line); }
+    .fact-tag { font: 10px var(--mono); text-transform: uppercase; color: var(--muted); }
+    .fact p { max-width: 290px; margin: 12px 0 0; font-size: 14px; line-height: 1.5; }
+    .section { padding: 82px 0; border-top: 1px solid var(--line); }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 30px; margin-bottom: 30px; }
+    .section-heading h2 { max-width: 570px; margin: 0; font-size: clamp(36px, 5vw, 58px); line-height: .98; letter-spacing: -2px; }
+    .section-heading p { max-width: 330px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .mode-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .mode-card { min-height: 220px; padding: 22px; border: 1px solid var(--ink); border-radius: 4px; background: rgba(255,255,255,.35); }
+    .mode-card:nth-child(2) { background: var(--blue); }
+    .mode-card:nth-child(3) { background: var(--orange); }
+    .mode-number { font: 11px var(--mono); }
+    .mode-card h3 { margin: 46px 0 9px; font-size: 22px; }
+    .mode-card p { max-width: 280px; margin: 0; font-size: 13px; line-height: 1.55; }
+    .story { display: grid; grid-template-columns: .92fr 1.08fr; gap: 8%; align-items: center; padding: 65px 7%; background: #d7eae3; border: 1px solid var(--ink); border-radius: 4px; }
+    .story h2 { margin: 0; font-size: clamp(34px, 4vw, 48px); line-height: 1; letter-spacing: -1.5px; }
+    .story-copy p { margin: 0 0 17px; color: #414940; font-size: 14px; line-height: 1.7; }
+    .story-copy p:last-child { margin-bottom: 0; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+    .step { min-height: 160px; padding: 18px 22px 18px 0; }
+    .step + .step { padding-left: 22px; border-left: 1px solid var(--line); }
+    .step-number { color: var(--orange); font: 12px var(--mono); }
+    .step h3 { margin: 29px 0 7px; font-size: 17px; }
+    .step p { max-width: 270px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .faq-list { border-top: 1px solid var(--ink); }
+    .faq-list details { border-bottom: 1px solid var(--line); }
+    .faq-list summary { position: relative; padding: 20px 38px 20px 0; cursor: pointer; list-style: none; font-size: 16px; font-weight: 600; }
+    .faq-list summary::-webkit-details-marker { display: none; }
+    .faq-list summary::after { position: absolute; right: 6px; content: '+'; color: var(--orange); font: 22px var(--mono); }
+    .faq-list details[open] summary::after { content: '−'; }
+    .faq-list details p { max-width: 650px; margin: -4px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+    .closing { display: flex; justify-content: space-between; align-items: center; gap: 26px; padding: 32px; border: 1px solid var(--ink); border-radius: 4px; background: var(--lime); }
+    .closing h2 { margin: 0 0 8px; font-size: 32px; line-height: 1; }
+    .closing p { margin: 0; color: #434a27; font-size: 13px; }
+    footer { display: flex; justify-content: space-between; gap: 20px; padding: 18px 0 24px; color: var(--muted); font: 10px var(--mono); line-height: 1.6; }
+    .footer-links { display: flex; gap: 17px; flex-wrap: wrap; }
+    .footer-links a { color: inherit; }
+
+    .notice-backdrop { position: fixed; z-index: 5; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(32,35,30,.56); }
+    .notice-backdrop[hidden] { display: none; }
+    .emergency-backdrop { position: fixed; z-index: 6; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(32,35,30,.68); }
+    .emergency-backdrop[hidden] { display: none; }
+    .notice { position: relative; width: min(440px, 100%); padding: 28px; border: 1px solid var(--ink); border-radius: 4px; background: var(--paper); box-shadow: 8px 8px 0 var(--lime); animation: arrive .2s ease-out both; }
+    .notice h2 { margin: 0 36px 12px 0; font-size: 28px; line-height: 1; }
+    .notice p { margin: 0; color: #4b4d45; font-size: 14px; line-height: 1.65; }
+    .close-button { position: absolute; top: 13px; right: 13px; width: 34px; height: 34px; border: 1px solid var(--ink); border-radius: 50%; background: transparent; cursor: pointer; font-size: 19px; }
+    .emergency-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 21px; }
+    .emergency-call { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+    .emergency-note { margin-top: 16px !important; font-size: 11px !important; }
+
+    @keyframes arrive { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+    @media (max-width: 800px) {
+      .hero { grid-template-columns: 1fr; gap: 30px; }
+      .product-stage { min-height: 400px; }
+      .doll-wrap { width: min(68%, 290px); }
+      .facts { margin-top: 40px; }
+      .topnav { gap: 13px; margin-right: 14px; }
+      .story { gap: 25px; padding: 42px; }
+    }
+    @media (max-width: 540px) {
+      .page { width: calc(100% - 32px); }
+      .topline { min-height: 56px; font-size: 9px; }
+      .top-status { gap: 6px; }
+      .topnav { display: none; }
+      main { padding-top: 36px; }
+      h1 { font-size: clamp(50px, 15vw, 70px); letter-spacing: -2px; }
+      .intro { margin: 18px 0 22px; font-size: 14px; }
+      .product-stage { min-height: 340px; }
+      .facts { grid-template-columns: 1fr; }
+      .fact { min-height: 0; padding: 16px 0; }
+      .fact + .fact { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+      .fact p { margin-top: 7px; }
+      .section { padding: 58px 0; }
+      .section-heading { align-items: flex-start; flex-direction: column; gap: 13px; }
+      .section-heading h2 { font-size: 39px; }
+      .mode-cards, .steps { grid-template-columns: 1fr; }
+      .mode-card { min-height: 175px; }
+      .mode-card h3 { margin-top: 29px; }
+      .step { min-height: 0; padding: 16px 0; }
+      .step + .step { padding-left: 0; border-left: 0; border-top: 1px solid var(--line); }
+      .step h3 { margin: 12px 0 6px; }
+      .story { grid-template-columns: 1fr; padding: 28px; }
+      .closing { align-items: flex-start; flex-direction: column; padding: 24px; }
+      .closing h2 { font-size: 28px; }
+      footer { flex-direction: column; gap: 8px; }
+      .buy-row { align-items: flex-start; flex-direction: column; gap: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topline">
+      <a class="brand" href="#top" aria-label="Intercept home"><span class="brand-mark" aria-hidden="true"></span> INTERCEPT</a>
+      <nav class="topnav" aria-label="Main navigation">
+        <a href="#modes">The modes</a>
+        <a href="#story">Our story</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="top-status"><span class="status-dot" aria-hidden="true"></span> Meet Intercept</div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="copy">
+          <p class="eyebrow">Intercept / the panic pal</p>
+          <h1 id="hero-title">A little help<br>for <span>oh-no moments.</span></h1>
+          <p class="intro">Meet Intercept: a soft, expressive panic doll with three big buttons for life's urgent little moments. Pick a level. Let the buddy match your energy.</p>
+          <div>
+            <span class="mode-label" id="mode-instructions">Choose a level to open the police call prompt</span>
+            <div class="mode-list" role="group" aria-labelledby="mode-instructions">
+              <button class="mode-button" type="button" data-level="normal" aria-pressed="true">Normal</button>
+              <button class="mode-button" type="button" data-level="medium" aria-pressed="false">Medium</button>
+              <button class="mode-button" type="button" data-level="critical" aria-pressed="false">Critical</button>
+            </div>
+            <div class="readout" aria-live="polite" aria-atomic="true">
+              <strong id="readout-title">All is moderately well.</strong>
+              <span id="readout-detail">Level 01 / chill-ish</span>
+            </div>
+          </div>
+          <div class="buy-row">
+            <button class="buy-button" type="button">Get launch updates</button>
+            <span class="price-note">Launch details<br>coming soon</span>
+          </div>
+        </div>
+
+        <div class="product-stage" aria-label="Illustration of the Intercept panic doll">
+          <div class="stage-grid" aria-hidden="true"></div>
+          <span class="stage-index">Intercept / 001</span>
+          <span class="spark one" aria-hidden="true">✳</span>
+          <span class="spark two" aria-hidden="true">✦</span>
+          <span class="spark three" aria-hidden="true">✳</span>
+          <div class="doll-wrap">
+            <svg class="doll" id="doll" data-level="normal" viewBox="0 0 360 390" role="img" aria-labelledby="doll-title doll-desc">
+              <title id="doll-title">Intercept panic doll</title>
+              <desc id="doll-desc">A round golden-yellow plush character with a single soft tuft, teal star badge, and an expressive smile.</desc>
+              <ellipse class="shadow" cx="180" cy="356" rx="103" ry="17" />
+              <g class="doll-body">
+                <path d="M120 293 103 333q-5 12 7 15l31 3 14-45m50-12 14 45 31-3q12-3 7-15l-17-40" fill="#e6a824" stroke="#20231e" stroke-width="5" stroke-linejoin="round" />
+                <path d="M103 199q-30-13-42 6-10 17 12 31l32-7m150-30q30-13 42 6 10 17-12 31l-32-7" fill="#ffd447" stroke="#20231e" stroke-width="5" stroke-linejoin="round" />
+                <path d="M101 137q0-61 79-65 79 4 79 65l-5 103q-4 76-74 95-70-19-74-95z" fill="#ffd447" stroke="#20231e" stroke-width="5" />
+                <path d="M158 76q-7-13 4-21 1-16 16-14 15-2 16 14 11 8 4 21" fill="#f1b833" stroke="#20231e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M119 126q4-22 24-34m74 0q20 12 24 34" fill="none" stroke="#fff0ad" stroke-width="5" stroke-linecap="round" />
+                <path d="M118 170q0-13 12-13t12 13-12 13-12-13m88 0q0-13 12-13t12 13-12 13-12-13" fill="#20231e" class="eye" />
+                <path d="M161 204q19 17 38 0" fill="none" stroke="#20231e" stroke-width="5" stroke-linecap="round" class="mouth" />
+                <circle cx="111" cy="196" r="9" fill="#78c9c4" /><circle cx="249" cy="196" r="9" fill="#78c9c4" />
+                <path d="m180 250 5 8 9 1-6 7 2 9-10-4-10 4 2-9-6-7 9-1z" fill="#78c9c4" stroke="#20231e" stroke-width="2.5" stroke-linejoin="round" />
+                <path d="M108 225q3 10 5 17m139-17q-3 10-5 17" fill="none" stroke="#e6a824" stroke-width="3" stroke-linecap="round" />
+                <path d="m155 325-9 24m58-24 9 24" stroke="#20231e" stroke-width="3" stroke-linecap="round" />
+              </g>
+            </svg>
+          </div>
+          <span class="stage-note">Three buttons / three moods</span>
+        </div>
+      </section>
+
+      <section class="facts" aria-label="Product highlights">
+        <div class="fact"><span class="fact-tag">01 / Three modes</span><p>Normal, medium, or critical. Every mode opens the call confirmation.</p></div>
+        <div class="fact"><span class="fact-tag">02 / Maximum buddy</span><p>A soft little sidekick with a face that gets the moment.</p></div>
+        <div class="fact"><span class="fact-tag">03 / Zero judgment</span><p>Just a playful novelty plush for life's awkward moments.</p></div>
+      </section>
+
+      <section class="section" id="modes" aria-labelledby="modes-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">Three levels of uh-oh</p><h2 id="modes-title">Every situation<br>has a button.</h2></div>
+          <p>Choose any level to open the emergency call confirmation. You decide whether to continue.</p>
+        </div>
+        <div class="mode-cards">
+          <article class="mode-card"><span class="mode-number">01 / NORMAL</span><h3>Normal.</h3><p>Opens the emergency call confirmation. You choose whether to continue.</p></article>
+          <article class="mode-card"><span class="mode-number">02 / MEDIUM</span><h3>Medium.</h3><p>Opens the same confirmation, with no automatic call.</p></article>
+          <article class="mode-card"><span class="mode-number">03 / CRITICAL</span><h3>Critical.</h3><p>Opens the same confirmation, with no automatic call.</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="story" aria-labelledby="story-title">
+        <div class="story">
+          <h2 id="story-title">Big feelings.<br>Small buddy.</h2>
+          <div class="story-copy">
+            <p>Intercept was made for those moments when your brain goes “uh-oh” and a little humor helps. No complicated setup, no lectures, no judgment.</p>
+            <p>Just a character with three moods and one important job: being your tiny sidekick when the moment gets weird.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="steps-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">Operation: Intercept</p><h2 id="steps-title">Simple as one,<br>two, whew.</h2></div>
+          <p>No app, no setup ritual. Just your buddy and the button that fits the moment.</p>
+        </div>
+        <div class="steps">
+          <article class="step"><span class="step-number">01</span><h3>Meet your buddy</h3><p>Keep Intercept close for the moments that call for a little levity.</p></article>
+          <article class="step"><span class="step-number">02</span><h3>Pick a level</h3><p>Choose normal, medium, or critical. We kept the menu mercifully short.</p></article>
+          <article class="step"><span class="step-number">03</span><h3>Carry on</h3><p>Take a breath, have a laugh, and handle your day your way.</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="faq" aria-labelledby="faq-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">Good questions</p><h2 id="faq-title">The fine print<br>without the fine print.</h2></div>
+          <p>Everything you need to know about your new favorite panic pal.</p>
+        </div>
+        <div class="faq-list">
+          <details><summary>What is Intercept?</summary><p>Intercept is a novelty panic doll concept: a soft, expressive companion with three playful urgency modes.</p></details>
+          <details><summary>Do all modes contact the police?</summary><p>Every mode opens a confirmation before opening your phone's emergency dialer. Tell the emergency operator you need police. This page cannot dispatch officers or call anyone without your confirmation.</p></details>
+          <details><summary>Does it give medical or bathroom advice?</summary><p>No. Intercept is for humor and companionship, not a medical device or a substitute for professional advice.</p></details>
+          <details><summary>When can I get one?</summary><p>Launch timing and pricing have not been announced yet. Check back here for updates.</p></details>
+        </div>
+      </section>
+
+      <section class="closing" aria-label="Intercept launch announcement">
+        <div><h2>Ready to meet Intercept?</h2><p>Your panic pal is getting ready for its big moment.</p></div>
+        <button class="buy-button" type="button">Get launch updates</button>
+      </section>
+    </main>
+
+    <footer>
+      <span>Intercept is a novelty concept, not a medical device or a substitute for professional advice.</span>
+      <span class="footer-links"><a href="#top">Back to top</a><a href="#faq">Product FAQ</a></span>
+    </footer>
+  </div>
+
+  <div class="notice-backdrop" id="notice-backdrop" hidden>
+    <section class="notice" role="dialog" aria-modal="true" aria-labelledby="notice-title" aria-describedby="notice-copy">
+      <button class="close-button" id="close-notice" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">Intercept / launch update</p>
+      <h2 id="notice-title">Good call.<br>Stay tuned.</h2>
+      <p id="notice-copy">Intercept is getting ready for launch. Pricing and order details will be announced here.</p>
+    </section>
+  </div>
+
+  <div class="emergency-backdrop" id="emergency-backdrop" hidden>
+    <section class="notice" role="alertdialog" aria-modal="true" aria-labelledby="emergency-title" aria-describedby="emergency-copy">
+      <button class="close-button" id="cancel-emergency-close" type="button" aria-label="Cancel call">×</button>
+      <p class="eyebrow">Intercept / emergency call</p>
+      <h2 id="emergency-title">Do you need<br>emergency help?</h2>
+      <p id="emergency-copy">If you need police or other emergency help, use the button below to open your phone dialer for 911 in the U.S. and Canada. Tell the operator what help you need.</p>
+      <div class="emergency-actions">
+        <a class="buy-button emergency-call" href="tel:911">Call 911</a>
+        <button class="mode-button" id="cancel-emergency" type="button">Not now</button>
+      </div>
+      <p class="emergency-note">This website cannot dispatch police. Elsewhere, call your local emergency number.</p>
+    </section>
+  </div>
+
+  <script>
+    const modes = {
+      normal: { title: 'Normal selected.', detail: 'Level 01 / confirm before calling' },
+      medium: { title: 'Medium selected.', detail: 'Level 02 / confirm before calling' },
+      critical: { title: 'Critical selected.', detail: 'Level 03 / confirm before calling' }
+    };
+    const doll = document.querySelector('#doll');
+    const readoutTitle = document.querySelector('#readout-title');
+    const readoutDetail = document.querySelector('#readout-detail');
+    const modeButtons = document.querySelectorAll('.mode-list .mode-button');
+    const buyButtons = document.querySelectorAll('.buy-button');
+    const backdrop = document.querySelector('#notice-backdrop');
+    const closeButton = document.querySelector('#close-notice');
+    const emergencyBackdrop = document.querySelector('#emergency-backdrop');
+    const emergencyCancel = document.querySelector('#cancel-emergency');
+    const emergencyClose = document.querySelector('#cancel-emergency-close');
+    let activeTrigger;
+    let emergencyTrigger;
+
+    modeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const mode = button.dataset.level;
+        doll.dataset.level = mode;
+        readoutTitle.textContent = modes[mode].title;
+        readoutDetail.textContent = modes[mode].detail;
+        modeButtons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        emergencyTrigger = button;
+        emergencyBackdrop.hidden = false;
+        emergencyCancel.focus();
+      });
+    });
+
+    function closeNotice() {
+      backdrop.hidden = true;
+      activeTrigger.focus();
+    }
+    buyButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeTrigger = button;
+        backdrop.hidden = false;
+        closeButton.focus();
+      });
+    });
+    closeButton.addEventListener('click', closeNotice);
+    function closeEmergencyPrompt() {
+      emergencyBackdrop.hidden = true;
+      emergencyTrigger.focus();
+    }
+    emergencyCancel.addEventListener('click', closeEmergencyPrompt);
+    emergencyClose.addEventListener('click', closeEmergencyPrompt);
+    emergencyBackdrop.addEventListener('click', (event) => {
+      if (event.target === emergencyBackdrop) closeEmergencyPrompt();
+    });
+    backdrop.addEventListener('click', (event) => {
+      if (event.target === backdrop) closeNotice();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !backdrop.hidden) closeNotice();
+      if (event.key === 'Escape' && !emergencyBackdrop.hidden) closeEmergencyPrompt();
+    });
+  </script>
+</body>
+</html>
